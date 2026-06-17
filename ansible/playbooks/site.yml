@@ -1,0 +1,6 @@
+---
+- name: Base provisioning
+  hosts: all
+  gather_facts: true
+  roles:
+    - common
