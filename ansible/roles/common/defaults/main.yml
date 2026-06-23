@@ -1,2 +1,12 @@
 ---
 # Default role variables.
+sudo_nopasswd_user: split-flap
+
+apt_common_packages:
+  - python3
+  - python3-pip
+  - watchdog
+
+i2c_apt_packages:
+  - i2c-tools
+  - python3-smbus

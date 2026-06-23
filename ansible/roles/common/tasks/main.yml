@@ -1,3 +1,92 @@
 ---
-- name: Ping target host
-  ansible.builtin.ping:
+- name: Ensure passwordless sudo for split-flap user
+  ansible.builtin.copy:
+    dest: "/etc/sudoers.d/{{ sudo_nopasswd_user }}"
+    content: "{{ sudo_nopasswd_user }} ALL=(ALL) NOPASSWD:ALL\n"
+    owner: root
+    group: root
+    mode: "0440"
+    validate: "/usr/sbin/visudo -cf %s"
+
+- name: Run apt update and dist-upgrade
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+    upgrade: dist
+
+- name: Install required apt packages
+  ansible.builtin.apt:
+    name: "{{ apt_common_packages }}"
+    state: present
+
+- name: Install I2C apt packages
+  ansible.builtin.apt:
+    name: "{{ i2c_apt_packages }}"
+    state: present
+
+
+- name: Check /boot/firmware/config.txt
+  ansible.builtin.stat:
+    path: /boot/firmware/config.txt
+  register: boot_firmware_config
+
+- name: Check /boot/config.txt
+  ansible.builtin.stat:
+    path: /boot/config.txt
+  register: boot_config
+
+- name: Select Raspberry Pi boot config path
+  ansible.builtin.set_fact:
+    pi_boot_config_path: "{{ '/boot/firmware/config.txt' if boot_firmware_config.stat.exists else '/boot/config.txt' }}"
+
+- name: Enable I2C in Raspberry Pi boot config
+  ansible.builtin.lineinfile:
+    path: "{{ pi_boot_config_path }}"
+    regexp: "^dtparam=i2c_arm="
+    line: "dtparam=i2c_arm=on"
+    create: true
+    mode: "0644"
+
+- name: Ensure i2c-dev module is loaded at boot
+  ansible.builtin.copy:
+    dest: /etc/modules-load.d/i2c.conf
+    content: "i2c-dev\n"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Load i2c-dev module now
+  ansible.builtin.command: modprobe i2c-dev
+  changed_when: false
+
+- name: Enable hardware watchdog in Raspberry Pi boot config
+  ansible.builtin.lineinfile:
+    path: "{{ pi_boot_config_path }}"
+    regexp: "^dtparam=watchdog="
+    line: "dtparam=watchdog=on"
+    create: true
+    mode: "0644"
+
+- name: Ensure bcm2835_wdt module is loaded at boot
+  ansible.builtin.copy:
+    dest: /etc/modules-load.d/bcm2835_wdt.conf
+    content: "bcm2835_wdt\n"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Load bcm2835_wdt module now
+  ansible.builtin.command: modprobe bcm2835_wdt
+  changed_when: false
+
+- name: Configure watchdog device
+  ansible.builtin.lineinfile:
+    path: /etc/watchdog.conf
+    regexp: "^#?watchdog-device"
+    line: "watchdog-device = /dev/watchdog"
+
+- name: Enable and start watchdog service
+  ansible.builtin.systemd:
+    name: watchdog
+    enabled: true
+    state: started
