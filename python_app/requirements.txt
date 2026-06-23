@@ -1,1 +1,2 @@
-# Add Python dependencies here, one per line.
+Flask>=3.0.0
+smbus2>=0.4.3

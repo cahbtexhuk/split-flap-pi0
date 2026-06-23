@@ -3,7 +3,7 @@
 Raspberry Pi Zero based controller for a split-flap display, with:
 
 - Ansible IaC for device provisioning
-- Python app entrypoint for runtime logic
+- Python Flask web app for display control, logging, and prop clock APIs
 
 ## Project layout
 
@@ -56,5 +56,15 @@ ansible-playbook playbooks/site.yml -i 192.168.1.50,
 
 ```bash
 cd python_app
+pip install -r requirements.txt
 python main.py
 ```
+
+Then open http://localhost:5000
+
+The web app includes:
+
+- Config page for display, I2C, logging, and prop clock defaults
+- Message page with alignment controls and clean command
+- Console log page with timestamped startup/runtime logs
+- Prop clock page plus API endpoints for clock control buttons

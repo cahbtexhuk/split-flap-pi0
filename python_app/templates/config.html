@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="panel">
+  <h2>Configuration</h2>
+  <form method="post" class="form-grid">
+    <label>
+      Number of symbols
+      <input type="number" name="num_symbols" min="1" value="{{ config.num_symbols }}" required>
+    </label>
+
+    <label>
+      Default rotation speed
+      <input type="number" name="default_rotation_speed" min="1" value="{{ config.default_rotation_speed }}" required>
+    </label>
+
+    <label>
+      I2C device index
+      <input type="number" name="i2c_device" min="0" value="{{ config.i2c_device }}" required>
+    </label>
+
+    <label>
+      Log line limit
+      <input type="number" name="log_line_limit" min="10" value="{{ config.log_line_limit }}" required>
+    </label>
+
+    <label>
+      Default prop clock time (HH:MM)
+      <input type="time" name="default_prop_clock_time" value="{{ config.default_prop_clock_time }}" required>
+    </label>
+
+    <div class="actions">
+      <button type="submit">Save Configuration</button>
+    </div>
+  </form>
+</section>
+{% endblock %}
