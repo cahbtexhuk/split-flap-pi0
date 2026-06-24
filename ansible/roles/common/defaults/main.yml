@@ -14,5 +14,5 @@ i2c_apt_packages:
 
 wsgi_app_dir: /opt/app
 wsgi_service_name: splitflap-wsgi
-wsgi_bind: 0.0.0.0:8000
+wsgi_bind: 0.0.0.0:80
 wsgi_workers: 2
