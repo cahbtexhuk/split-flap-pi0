@@ -8,11 +8,10 @@
     mode: "0440"
     validate: "/usr/sbin/visudo -cf %s"
 
-- name: Run apt update and dist-upgrade
+- name: Run apt update and upgrade installed packages
   ansible.builtin.apt:
     update_cache: true
-    cache_valid_time: 3600
-    upgrade: dist
+    upgrade: "yes"
 
 - name: Install required apt packages
   ansible.builtin.apt:
