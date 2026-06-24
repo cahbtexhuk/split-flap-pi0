@@ -5,8 +5,14 @@ sudo_nopasswd_user: split-flap
 apt_common_packages:
   - python3
   - python3-pip
+  - gunicorn3
   - watchdog
 
 i2c_apt_packages:
   - i2c-tools
   - python3-smbus
+
+wsgi_app_dir: /opt/app
+wsgi_service_name: splitflap-wsgi
+wsgi_bind: 0.0.0.0:80
+wsgi_workers: 2

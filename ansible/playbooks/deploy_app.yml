@@ -1,0 +1,44 @@
+---
+- name: Deploy Python app to WSGI server
+  hosts: all
+  gather_facts: false
+  become: true
+  vars:
+    wsgi_app_dir: /opt/app
+    wsgi_service_name: splitflap-wsgi
+  tasks:
+    - name: Ensure app directory exists
+      ansible.builtin.file:
+        path: "{{ wsgi_app_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Deploy Python application files
+      ansible.builtin.copy:
+        src: ../../python_app/
+        dest: "{{ wsgi_app_dir }}/"
+        owner: root
+        group: root
+        mode: preserve
+
+    - name: Deploy WSGI entrypoint for app
+      ansible.builtin.copy:
+        dest: "{{ wsgi_app_dir }}/wsgi.py"
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          def app(environ, start_response):
+              body = b"Hello World from deployed python app"
+              start_response("200 OK", [
+                  ("Content-Type", "text/plain; charset=utf-8"),
+                  ("Content-Length", str(len(body))),
+              ])
+              return [body]
+
+    - name: Restart WSGI service
+      ansible.builtin.systemd:
+        name: "{{ wsgi_service_name }}"
+        state: restarted
