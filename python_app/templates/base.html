@@ -12,7 +12,6 @@
     <nav>
       <a href="{{ url_for('message_page') }}">Message</a>
       <a href="{{ url_for('config_page') }}">Configuration</a>
-      <a href="{{ url_for('logs_page') }}">Console Log</a>
       <a href="{{ url_for('prop_clock_page') }}">Prop Clock</a>
     </nav>
   </header>
@@ -28,6 +27,35 @@
       {% endif %}
     {% endwith %}
     {% block content %}{% endblock %}
+
+    <section class="panel log-footer">
+      <h3>Console Log</h3>
+      <pre class="terminal-window" id="log-output">[loading...]</pre>
+    </section>
   </main>
+
+<script>
+  (function () {
+    const el = document.getElementById("log-output");
+    let lastCount = 0;
+
+    async function pollLogs() {
+      try {
+        const resp = await fetch("/api/logs");
+        if (!resp.ok) return;
+        const data = await resp.json();
+        const lines = data.lines || [];
+        if (lines.length !== lastCount) {
+          lastCount = lines.length;
+          el.textContent = lines.length ? lines.join("\n") : "[no logs yet]";
+          el.scrollTop = el.scrollHeight;
+        }
+      } catch (_) {}
+    }
+
+    pollLogs();
+    setInterval(pollLogs, 3000);
+  })();
+</script>
 </body>
 </html>

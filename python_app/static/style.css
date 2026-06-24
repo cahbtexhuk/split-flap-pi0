@@ -157,6 +157,25 @@ button:hover {
   white-space: pre-wrap;
 }
 
+.log-footer {
+  margin-top: 1.2rem;
+}
+
+.log-footer h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.log-footer .terminal-window {
+  min-height: 120px;
+  max-height: 220px;
+  line-height: 1.2;
+  font-size: 0.82rem;
+}
+
 .flash-wrap {
   margin-bottom: 0.85rem;
 }
