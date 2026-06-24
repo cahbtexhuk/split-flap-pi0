@@ -28,7 +28,7 @@ ansible-playbook playbooks/site.yml
 Current provisioning includes:
 
 - Passwordless sudo for `split-flap`
-- `apt` update and dist-upgrade
+- `apt` update and regular package upgrade
 - I2C enablement (`dtparam=i2c_arm=on` + `i2c-dev` module)
 - Python and global I2C Python packages (`python3`, `python3-pip`, `python3-smbus`, `smbus2`)
 - Hardware watchdog enablement (`dtparam=watchdog=on` + `bcm2835_wdt`)
