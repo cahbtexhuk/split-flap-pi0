@@ -5,6 +5,7 @@
 #
 # Usage:
 #   ./run.sh                                    # use inventory host
+#   ./run.sh deploy_app.yml                     # run a specific playbook in playbooks/
 #   ./run.sh -e ansible_host=192.168.1.106      # override target IP
 #   ./run.sh -i 192.168.1.106,                  # one-off IP, no inventory
 
@@ -19,4 +20,11 @@ export ANSIBLE_RETRY_FILES_ENABLED=False
 export ANSIBLE_STDOUT_CALLBACK=default
 export ANSIBLE_RESULT_FORMAT=yaml
 
-ansible-playbook "${SCRIPT_DIR}/playbooks/site.yml" "$@"
+PLAYBOOK="${SCRIPT_DIR}/playbooks/site.yml"
+
+if [[ $# -gt 0 && "$1" == *.yml ]]; then
+	PLAYBOOK="${SCRIPT_DIR}/playbooks/$1"
+	shift
+fi
+
+ansible-playbook "${PLAYBOOK}" "$@"

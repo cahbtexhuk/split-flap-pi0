@@ -1,0 +1,38 @@
+---
+- name: Ensure WSGI app directory exists
+  ansible.builtin.file:
+    path: "{{ wsgi_app_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Create minimal WSGI hello-world app
+  ansible.builtin.copy:
+    dest: "{{ wsgi_app_dir }}/wsgi.py"
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      def app(environ, start_response):
+          body = b"Hello World from /opt/app"
+          start_response("200 OK", [
+              ("Content-Type", "text/plain; charset=utf-8"),
+              ("Content-Length", str(len(body))),
+          ])
+          return [body]
+
+- name: Install systemd service for WSGI app
+  ansible.builtin.template:
+    src: splitflap-wsgi.service.j2
+    dest: "/etc/systemd/system/{{ wsgi_service_name }}.service"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Enable and start WSGI service
+  ansible.builtin.systemd:
+    name: "{{ wsgi_service_name }}"
+    enabled: true
+    state: started
+    daemon_reload: true

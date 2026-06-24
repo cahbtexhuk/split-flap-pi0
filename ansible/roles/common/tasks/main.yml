@@ -24,6 +24,9 @@
     name: "{{ i2c_apt_packages }}"
     state: present
 
+- name: Install and configure WSGI service
+  ansible.builtin.include_tasks: install_wsgi.yml
+
 
 - name: Check /boot/firmware/config.txt
   ansible.builtin.stat:
