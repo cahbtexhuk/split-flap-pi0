@@ -60,6 +60,23 @@ pip install -r requirements.txt
 python main.py
 ```
 
+Launch with I2C disabled (simulation mode for development/testing):
+
+```bash
+python main.py --disable-i2c
+```
+
+Alias:
+
+```bash
+python main.py --no-i2c
+```
+
+Behavior:
+
+- Default (no flag): real I2C mode
+- With `--disable-i2c` or `--no-i2c`: I2C disabled, hardware calls simulated as successful
+
 Then open http://localhost:5000
 
 The web app includes:

@@ -39,6 +39,23 @@ From this folder:
 python main.py
 ```
 
+Run with I2C disabled (simulation mode):
+
+```bash
+python main.py --disable-i2c
+```
+
+Alias:
+
+```bash
+python main.py --no-i2c
+```
+
+Mode behavior:
+
+- No flag: real I2C mode
+- `--disable-i2c` or `--no-i2c`: I2C is disabled and calls are simulated as successful
+
 Open:
 
 http://localhost:5000

@@ -3,9 +3,8 @@ from __future__ import annotations
 from typing import Any, Callable
 
 
-# Set to True to skip real I2C hardware and simulate successful responses.
-# Useful for testing and debugging on non-Raspberry Pi machines.
-SIMULATE_I2C: bool = True
+# Default is real I2C access. Set True via startup flag to disable hardware access.
+SIMULATE_I2C: bool = False
 
 
 def send_message_to_display(
