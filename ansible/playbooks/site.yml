@@ -1,7 +1,44 @@
 ---
-- name: Base provisioning
+- name: Deploy Python app to WSGI server
   hosts: all
-  gather_facts: true
+  gather_facts: false
   become: true
-  roles:
-    - common
+  vars:
+    wsgi_app_dir: /opt/app
+    wsgi_service_name: splitflap-wsgi
+  tasks:
+    - name: Ensure app directory exists
+      ansible.builtin.file:
+        path: "{{ wsgi_app_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Deploy Python application files
+      ansible.builtin.copy:
+        src: ../../python_app/
+        dest: "{{ wsgi_app_dir }}/"
+        owner: root
+        group: root
+        mode: preserve
+
+    - name: Install Python requirements
+      ansible.builtin.pip:
+        requirements: "{{ wsgi_app_dir }}/requirements.txt"
+        executable: pip3
+        extra_args: --break-system-packages
+
+    - name: Deploy WSGI entrypoint
+      ansible.builtin.copy:
+        dest: "{{ wsgi_app_dir }}/wsgi.py"
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          from main import app
+
+    - name: Restart WSGI service
+      ansible.builtin.systemd:
+        name: "{{ wsgi_service_name }}"
+        state: restarted

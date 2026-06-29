@@ -4,10 +4,11 @@
 # filesystems). Configuration is passed via environment variables instead.
 #
 # Usage:
-#   ./run.sh                                    # use inventory host
-#   ./run.sh deploy_app.yml                     # run a specific playbook in playbooks/
-#   ./run.sh -e ansible_host=192.168.1.106      # override target IP
-#   ./run.sh -i 192.168.1.106,                  # one-off IP, no inventory
+#   ./run.sh                                    # deploy app (site.yml) using inventory host
+#   ./run.sh -e ansible_host=192.168.1.106      # deploy app, override target IP
+#   ./run.sh provision.yml                      # full Pi provisioning (first-time setup)
+#   ./run.sh provision.yml -e ansible_host=IP   # full provisioning with IP override
+#   ./run.sh -i 192.168.1.106,                  # deploy app, one-off IP (no inventory)
 
 set -euo pipefail
 

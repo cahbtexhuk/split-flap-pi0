@@ -13,13 +13,14 @@ CONFIG_PATH = APP_DIR / "config.json"
 
 DEFAULT_CONFIG: dict[str, Any] = {
     "num_symbols": 10,
-    "default_rotation_speed": 40,
+    "default_rotation_speed": 80,
     "i2c_device": 1,
     "log_line_limit": 200,
-    "default_prop_clock_time": "12:00",
+    "default_prop_clock_time": "22:00",
 }
 
-ALLOWED_SYMBOLS = set("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789:!?-. ,")
+FLAP_LETTERS: tuple[str, ...] = tuple(" ABCDEFGHIJKLMNOPQRSTUVWXYZ$&#0123456789:,.-?!")
+ALLOWED_SYMBOLS: frozenset[str] = frozenset(FLAP_LETTERS)
 
 CONFIG: dict[str, Any] = {}
 CONFIG_LOCK = Lock()
@@ -145,6 +146,14 @@ def apply_config(new_config: dict[str, Any]) -> None:
     set_log_limit(CONFIG["log_line_limit"])
     initialize_clock_state()
     console_print("configuration saved and reloaded")
+
+
+def translate_letter_to_int(char: str) -> int:
+    """Return the flap index of char, or -1 if not in FLAP_LETTERS."""
+    try:
+        return FLAP_LETTERS.index(char)
+    except ValueError:
+        return -1
 
 
 def sanitize_message(raw: str) -> str:

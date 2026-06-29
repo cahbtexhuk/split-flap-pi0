@@ -33,6 +33,13 @@ def register_routes(app: Flask) -> None:
 
         return render_template("config.html", config=data.get_config())
 
+    @app.post("/config/restart")
+    def config_restart() -> Any:
+        data.startup_initialize()
+        hardware.initialize_i2c_scan(data.get_config(), data.console_print)
+        flash("Initialisation complete — I2C scan finished.")
+        return redirect(url_for("config_page"))
+
     @app.route("/message", methods=["GET", "POST"])
     def message_page() -> Any:
         preview = ""
