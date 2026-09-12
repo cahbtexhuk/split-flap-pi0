@@ -7,8 +7,8 @@ Type=simple
 WorkingDirectory={{ wsgi_app_dir }}
 ExecStart=/usr/bin/gunicorn3 --workers {{ wsgi_workers }} --bind {{ wsgi_bind }} wsgi:app
 Restart=on-failure
-User=root
-Group=root
+User=split-flap
+Group=split-flap
 
 [Install]
 WantedBy=multi-user.target
