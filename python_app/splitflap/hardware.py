@@ -30,24 +30,33 @@ def send_message_to_display(
             logger("i2c send skipped - smbus/smbus2 package is not available")
             return
 
-    try:
-        with SMBus(int(config["i2c_device"])) as bus:
-            address = 1  
-            for char in message:
+    bus_num = int(config["i2c_device"])
 
-                     
-                bus.write_i2c_block_data(address, translate_letter_to_int(char), [effective_speed])
+    try:
+        with SMBus(bus_num) as bus:
+            # Loop over characters and send to ascending slave addresses (1 to 10)
+            for i, char in enumerate(message):
+                slave_address = i + 1  # Slaves are addressed 1 through 10
+                
+                if slave_address > 10:
+                    break  # Stop if message length exceeds number of display units
+                
+                char_byte = int(translate_letter_to_int(char))
+                speed_byte = int(effective_speed)
+                
+                # Sends Slave Addr -> Byte 1 (Char) -> Byte 2 (Speed)
+                bus.write_i2c_block_data(slave_address, char_byte, [speed_byte])
     except OSError as exc:
-        logger(f"i2c scan failed to open bus {bus_number}: {exc}")
+        logger(f"i2c scan failed to open bus {bus_num}: {exc}")
         return
 
 def initialize_i2c_scan(config: dict[str, Any], logger: Callable[[str], None]) -> None:
-    bus_number = int(config["i2c_device"])
+    bus_num = int(config["i2c_device"])
     max_address = int(config["num_symbols"])
     found = 0
 
     if SIMULATE_I2C:
-        logger(f"[SIMULATE] starting i2c scan on bus {bus_number}, addresses 1..{max_address}")
+        logger(f"[SIMULATE] starting i2c scan on bus {bus_num}, addresses 1..{max_address}")
         for address in range(1, max_address + 1):
             logger(f"[SIMULATE] i2c address {address} check pass")
             found += 1
@@ -63,10 +72,10 @@ def initialize_i2c_scan(config: dict[str, Any], logger: Callable[[str], None]) -
         logger("i2c scan skipped - smbus/smbus2 package is not available")
         return
 
-    logger(f"starting i2c scan on bus {bus_number}, addresses 1..{max_address}")
+    logger(f"starting i2c scan on bus {bus_num}, addresses 1..{max_address}")
 
     try:
-        with SMBus(bus_number) as bus:
+        with SMBus(bus_num) as bus:
             for address in range(1, max_address + 1):
                 try:
                     bus.read_byte(address)
@@ -75,7 +84,7 @@ def initialize_i2c_scan(config: dict[str, Any], logger: Callable[[str], None]) -
                 except OSError as exc:
                     logger(f"i2c address {address} check fail (NACK/error): {exc}")
     except OSError as exc:
-        logger(f"i2c scan failed to open bus {bus_number}: {exc}")
+        logger(f"i2c scan failed to open bus {bus_num}: {exc}")
         return
 
     logger(f"i2c scan complete - found {found} units")
