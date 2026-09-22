@@ -22,6 +22,12 @@
   ansible.builtin.apt:
     name: "{{ i2c_apt_packages }}"
     state: present
+    
+- name: Add split-flap user to i2c group
+  ansible.builtin.user:
+    name: split-flap
+    grroups: i2c
+    append: true
 
 - name: Install and configure WSGI service
   ansible.builtin.include_tasks: install_wsgi.yml

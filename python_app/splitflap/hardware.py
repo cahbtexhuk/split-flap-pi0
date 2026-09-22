@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
-from python_app.splitflap.data import translate_letter_to_int
+from splitflap.data import translate_letter_to_int
 
 
 # Default is real I2C access. Set True via startup flag to disable hardware access.
@@ -19,16 +19,18 @@ def send_message_to_display(
     effective_speed = speed if speed is not None else int(config["default_rotation_speed"])
     prefix = "[SIMULATE] " if SIMULATE_I2C else ""
     logger(f"{prefix}display send (speed={effective_speed}): {message}")
-    if not SIMULATE_I2C:
-        # Replace this with real split-flap output logic
+    
+    if SIMULATE_I2C:
+        return
+
+    try:
         try:
-            try:
-                from smbus2 import SMBus  # type: ignore
-            except ImportError:
-                from smbus import SMBus  # type: ignore
+            from smbus2 import SMBus  # type: ignore
         except ImportError:
-            logger("i2c send skipped - smbus/smbus2 package is not available")
-            return
+            from smbus import SMBus  # type: ignore
+    except ImportError:
+        logger("i2c send skipped - smbus/smbus2 package is not available")
+        return
 
     bus_num = int(config["i2c_device"])
 
@@ -39,16 +41,23 @@ def send_message_to_display(
                 slave_address = i + 1  # Slaves are addressed 1 through 10
                 
                 if slave_address > 10:
-                    break  # Stop if message length exceeds number of display units
+                    break  # Stop if message exceeds display capacity
                 
                 char_byte = int(translate_letter_to_int(char))
                 speed_byte = int(effective_speed)
                 
-                # Sends Slave Addr -> Byte 1 (Char) -> Byte 2 (Speed)
-                bus.write_i2c_block_data(slave_address, char_byte, [speed_byte])
+                try:
+                    # Sends Slave Addr -> Byte 1 (Char / Register) -> Byte 2 (Speed)
+                    bus.write_i2c_block_data(slave_address, char_byte, [speed_byte])
+                    time.sleep(0.001)
+                except OSError as slave_exc:
+                    # Prevents a single slave error (NACK) from crashing the Flask route
+                    logger(f"i2c write failed for slave {slave_address}: {slave_exc}")
+
     except OSError as exc:
-        logger(f"i2c scan failed to open bus {bus_num}: {exc}")
+        logger(f"i2c write failed to open bus {bus_num}: {exc}")
         return
+
 
 def initialize_i2c_scan(config: dict[str, Any], logger: Callable[[str], None]) -> None:
     bus_num = int(config["i2c_device"])
