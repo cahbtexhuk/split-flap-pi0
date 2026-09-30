@@ -18,6 +18,24 @@
     name: "{{ apt_common_packages }}"
     state: present
 
+- name: Configure log2ram size
+  ansible.builtin.lineinfile:
+    path: /etc/log2ram.conf
+    regexp: "^SIZE="
+    line: "SIZE={{ log2ram_size }}"
+    create: true
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart log2ram
+
+- name: Enable and start log2ram service
+  ansible.builtin.systemd:
+    name: log2ram
+    enabled: true
+    state: started
+    daemon_reload: true
+
 - name: Install I2C apt packages
   ansible.builtin.apt:
     name: "{{ i2c_apt_packages }}"
@@ -26,12 +44,34 @@
 - name: Add split-flap user to i2c group
   ansible.builtin.user:
     name: split-flap
-    grroups: i2c
+    groups: i2c
     append: true
 
 - name: Install and configure WSGI service
   ansible.builtin.include_tasks: install_wsgi.yml
 
+- name: Disable unnecessary services
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: false
+    state: stopped
+  loop:
+    - bluetooth.service
+    - hciuart.service
+    - triggerhappy.service
+    - ModemManager.service
+    - alsa-state.service
+  register: disable_unnecessary_services
+  failed_when:
+    - disable_unnecessary_services is failed
+    - "'Could not find the requested service' not in disable_unnecessary_services.msg"
+
+- name: Set virtual memory swappiness
+  ansible.posix.sysctl:
+    name: vm.swappiness
+    value: "10"
+    state: present
+    reload: true
 
 - name: Check /boot/firmware/config.txt
   ansible.builtin.stat:
@@ -46,6 +86,14 @@
 - name: Select Raspberry Pi boot config path
   ansible.builtin.set_fact:
     pi_boot_config_path: "{{ '/boot/firmware/config.txt' if boot_firmware_config.stat.exists else '/boot/config.txt' }}"
+
+- name: Disable HDMI output in Raspberry Pi boot config
+  ansible.builtin.lineinfile:
+    path: "{{ pi_boot_config_path }}"
+    regexp: "^hdmi_blanking="
+    line: "hdmi_blanking=2"
+    create: true
+    mode: "0644"
 
 - name: Enable I2C in Raspberry Pi boot config
   ansible.builtin.lineinfile:

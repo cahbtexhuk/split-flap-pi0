@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from typing import Any, Callable
 
 from splitflap.data import translate_letter_to_int
@@ -7,6 +8,9 @@ from splitflap.data import translate_letter_to_int
 
 # Default is real I2C access. Set True via startup flag to disable hardware access.
 SIMULATE_I2C: bool = False
+
+# Offset added to slave index to avoid reserved I2C addresses 0x00-0x07, must match Unit.ino I2C_ADDRESS_BASE
+I2C_ADDRESS_BASE: int = 0x10
 
 
 def send_message_to_display(
@@ -36,11 +40,11 @@ def send_message_to_display(
 
     try:
         with SMBus(bus_num) as bus:
-            # Loop over characters and send to ascending slave addresses (1 to 10)
+            # Loop over characters and send to ascending slave addresses (base to base+9)
             for i, char in enumerate(message):
-                slave_address = i + 1  # Slaves are addressed 1 through 10
-                
-                if slave_address > 10:
+                slave_address = I2C_ADDRESS_BASE + i
+
+                if i >= 10:
                     break  # Stop if message exceeds display capacity
                 
                 char_byte = int(translate_letter_to_int(char))
@@ -65,9 +69,9 @@ def initialize_i2c_scan(config: dict[str, Any], logger: Callable[[str], None]) -
     found = 0
 
     if SIMULATE_I2C:
-        logger(f"[SIMULATE] starting i2c scan on bus {bus_num}, addresses 1..{max_address}")
-        for address in range(1, max_address + 1):
-            logger(f"[SIMULATE] i2c address {address} check pass")
+        logger(f"[SIMULATE] starting i2c scan on bus {bus_num}, addresses {I2C_ADDRESS_BASE:#x}..{I2C_ADDRESS_BASE + max_address - 1:#x}")
+        for address in range(I2C_ADDRESS_BASE, I2C_ADDRESS_BASE + max_address):
+            logger(f"[SIMULATE] i2c address {address:#x} check pass")
             found += 1
         logger(f"[SIMULATE] i2c scan complete - found {found} units")
         return
@@ -81,17 +85,17 @@ def initialize_i2c_scan(config: dict[str, Any], logger: Callable[[str], None]) -
         logger("i2c scan skipped - smbus/smbus2 package is not available")
         return
 
-    logger(f"starting i2c scan on bus {bus_num}, addresses 1..{max_address}")
+    logger(f"starting i2c scan on bus {bus_num}, addresses {I2C_ADDRESS_BASE:#x}..{I2C_ADDRESS_BASE + max_address - 1:#x}")
 
     try:
         with SMBus(bus_num) as bus:
-            for address in range(1, max_address + 1):
+            for address in range(I2C_ADDRESS_BASE, I2C_ADDRESS_BASE + max_address):
                 try:
                     bus.read_byte(address)
                     found += 1
-                    logger(f"i2c address {address} check pass")
+                    logger(f"i2c address {address:#x} check pass")
                 except OSError as exc:
-                    logger(f"i2c address {address} check fail (NACK/error): {exc}")
+                    logger(f"i2c address {address:#x} check fail (NACK/error): {exc}")
     except OSError as exc:
         logger(f"i2c scan failed to open bus {bus_num}: {exc}")
         return

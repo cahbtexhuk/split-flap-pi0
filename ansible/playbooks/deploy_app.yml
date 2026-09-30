@@ -23,20 +23,32 @@
         group: root
         mode: preserve
 
-    - name: Deploy WSGI entrypoint for app
+    - name: Ensure runtime configuration is writable by the app user
+      ansible.builtin.file:
+        path: "{{ wsgi_app_dir }}/config.json"
+        state: touch
+        access_time: preserve
+        modification_time: preserve
+        owner: split-flap
+        group: split-flap
+        mode: "0640"
+
+    - name: Install Python requirements
+      ansible.builtin.pip:
+        requirements: "{{ wsgi_app_dir }}/requirements.txt"
+        executable: pip3
+        extra_args: --break-system-packages
+
+    - name: Deploy WSGI entrypoint
       ansible.builtin.copy:
         dest: "{{ wsgi_app_dir }}/wsgi.py"
         owner: root
         group: root
         mode: "0644"
         content: |
-          def app(environ, start_response):
-              body = b"Hello World from deployed python app"
-              start_response("200 OK", [
-                  ("Content-Type", "text/plain; charset=utf-8"),
-                  ("Content-Length", str(len(body))),
-              ])
-              return [body]
+          from main import app, initialize_app
+
+          initialize_app()
 
     - name: Restart WSGI service
       ansible.builtin.systemd:

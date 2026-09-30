@@ -7,6 +7,7 @@ apt_common_packages:
   - python3-pip
   - gunicorn3
   - watchdog
+  - log2ram
 
 i2c_apt_packages:
   - i2c-tools
@@ -16,3 +17,4 @@ wsgi_app_dir: /opt/app
 wsgi_service_name: splitflap-wsgi
 wsgi_bind: 0.0.0.0:80
 wsgi_workers: 1
+log2ram_size: 32M

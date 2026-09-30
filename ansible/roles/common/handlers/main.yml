@@ -1,2 +1,10 @@
 ---
-# Add handlers here when needed.
+- name: Restart log2ram
+  ansible.builtin.systemd:
+    name: log2ram
+    state: restarted
+
+- name: Restart WSGI service
+  ansible.builtin.systemd:
+    name: "{{ wsgi_service_name }}"
+    state: restarted

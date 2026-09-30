@@ -5,10 +5,12 @@ After=network.target
 [Service]
 Type=simple
 WorkingDirectory={{ wsgi_app_dir }}
-ExecStart=/usr/bin/gunicorn3 --workers {{ wsgi_workers }} --bind {{ wsgi_bind }} wsgi:app
+ExecStart=/usr/bin/gunicorn3 --workers {{ wsgi_workers }} --bind {{ wsgi_bind }} --access-logfile - --error-logfile - --capture-output --log-level info wsgi:app
 Restart=on-failure
 User=split-flap
 Group=split-flap
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
 
 [Install]
 WantedBy=multi-user.target

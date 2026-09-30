@@ -2,4 +2,5 @@
 
 Run from this folder:
 
-ansible-playbook playbooks/site.yml
+ansible-playbook playbooks/provision.yml
+ansible-playbook playbooks/deploy_app.yml

@@ -28,10 +28,8 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def main() -> None:
-    args = parse_args()
-    hardware.SIMULATE_I2C = bool(args.disable_i2c)
-
+def initialize_app(simulate_i2c: bool = False) -> None:
+    hardware.SIMULATE_I2C = simulate_i2c
     data.startup_initialize()
     data.set_display_sender(_display_sender)
     data.console_print("application startup")
@@ -39,6 +37,11 @@ def main() -> None:
         data.console_print("[SIMULATE] i2c simulation mode active - no hardware will be accessed")
     else:
         data.console_print("i2c hardware mode active")
+
+
+def main() -> None:
+    args = parse_args()
+    initialize_app(simulate_i2c=bool(args.disable_i2c))
     hardware.initialize_i2c_scan(data.get_config(), data.console_print)
     app.run(host="0.0.0.0", port=5000, debug=False)
 

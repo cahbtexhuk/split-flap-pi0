@@ -22,7 +22,7 @@ From the project root:
 
 ```bash
 cd ansible
-ansible-playbook playbooks/site.yml
+ansible-playbook playbooks/provision.yml
 ```
 
 Current provisioning includes:
@@ -42,14 +42,14 @@ Use the existing inventory host alias and override `ansible_host`:
 
 ```bash
 cd ansible
-ansible-playbook playbooks/site.yml --limit split-flap -e ansible_host=192.168.1.50
+ansible-playbook playbooks/deploy_app.yml --limit split-flap -e ansible_host=192.168.1.50
 ```
 
 Or bypass inventory with a one-off host:
 
 ```bash
 cd ansible
-ansible-playbook playbooks/site.yml -i 192.168.1.50,
+ansible-playbook playbooks/deploy_app.yml -i 192.168.1.50,
 ```
 
 ## Run Python app
