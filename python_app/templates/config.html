@@ -20,6 +20,26 @@
     </label>
 
     <label>
+      First unit address (switch value)
+      <input type="number" name="first_unit_address" min="0" value="{{ config.first_unit_address }}" required>
+    </label>
+
+    <label style="display: flex; align-items: center; gap: 0.5rem;">
+      <input type="checkbox" name="tca_enabled" {% if config.tca_enabled %}checked{% endif %}>
+      Enable TCA9548A multiplexer
+    </label>
+
+    <label>
+      TCA9548A I2C address (hex or dec, e.g. 0x70)
+      <input type="text" name="tca_address" value="0x{{ '%02x' % config.tca_address if config.tca_address is number else config.tca_address }}" required>
+    </label>
+
+    <label>
+      TCA9548A active channels (comma-separated, e.g. 0, 1)
+      <input type="text" name="tca_channels" value="{{ config.tca_channels }}" required>
+    </label>
+
+    <label>
       Log line limit
       <input type="number" name="log_line_limit" min="10" value="{{ config.log_line_limit }}" required>
     </label>

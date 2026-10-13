@@ -15,6 +15,10 @@ DEFAULT_CONFIG: dict[str, Any] = {
     "num_symbols": 10,
     "default_rotation_speed": 80,
     "i2c_device": 1,
+    "first_unit_address": 1,
+    "tca_enabled": True,
+    "tca_address": 0x70,
+    "tca_channels": "0, 1",
     "log_line_limit": 200,
     "default_prop_clock_time": "22:00",
 }
@@ -24,6 +28,9 @@ ALLOWED_SYMBOLS: frozenset[str] = frozenset(FLAP_LETTERS)
 
 CONFIG: dict[str, Any] = {}
 CONFIG_LOCK = Lock()
+
+SLAVE_CHANNEL_MAP: dict[int, int] = {}
+SLAVE_CHANNEL_LOCK = Lock()
 
 LOG_LINES: deque[str] = deque(maxlen=DEFAULT_CONFIG["log_line_limit"])
 LOG_LOCK = Lock()
@@ -38,6 +45,36 @@ DISPLAY_SENDER: Callable[[str, int | None], None] | None = None
 def set_display_sender(sender: Callable[[str, int | None], None]) -> None:
     global DISPLAY_SENDER
     DISPLAY_SENDER = sender
+
+
+def set_slave_channel_map(mapping: dict[int, int]) -> None:
+    global SLAVE_CHANNEL_MAP
+    with SLAVE_CHANNEL_LOCK:
+        SLAVE_CHANNEL_MAP = dict(mapping)
+
+
+def get_slave_channel_map() -> dict[int, int]:
+    with SLAVE_CHANNEL_LOCK:
+        return dict(SLAVE_CHANNEL_MAP)
+
+
+def get_tca_channel_list(cfg: dict[str, Any]) -> list[int]:
+    raw = cfg.get("tca_channels", DEFAULT_CONFIG["tca_channels"])
+    channels: list[int] = []
+    if isinstance(raw, list):
+        for part in raw:
+            if str(part).strip().isdigit():
+                ch = int(part)
+                if 0 <= ch <= 7:
+                    channels.append(ch)
+    else:
+        for part in str(raw).split(","):
+            part = part.strip()
+            if part.isdigit():
+                ch = int(part)
+                if 0 <= ch <= 7:
+                    channels.append(ch)
+    return sorted(set(channels)) if channels else [0, 1]
 
 
 def console_print(message: str) -> None:
@@ -84,6 +121,25 @@ def sanitize_config(raw: dict[str, Any]) -> dict[str, Any]:
         cfg["i2c_device"] = max(0, int(cfg["i2c_device"]))
     except (TypeError, ValueError):
         cfg["i2c_device"] = DEFAULT_CONFIG["i2c_device"]
+
+    try:
+        cfg["first_unit_address"] = max(0, int(cfg["first_unit_address"]))
+    except (TypeError, ValueError):
+        cfg["first_unit_address"] = DEFAULT_CONFIG["first_unit_address"]
+
+    cfg["tca_enabled"] = bool(cfg.get("tca_enabled", DEFAULT_CONFIG["tca_enabled"]))
+
+    tca_addr = cfg.get("tca_address", DEFAULT_CONFIG["tca_address"])
+    try:
+        if isinstance(tca_addr, str):
+            cfg["tca_address"] = int(tca_addr.strip(), 0)
+        else:
+            cfg["tca_address"] = int(tca_addr)
+    except (TypeError, ValueError):
+        cfg["tca_address"] = DEFAULT_CONFIG["tca_address"]
+
+    channels = get_tca_channel_list(cfg)
+    cfg["tca_channels"] = ", ".join(str(c) for c in channels)
 
     try:
         cfg["log_line_limit"] = max(10, int(cfg["log_line_limit"]))

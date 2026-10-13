@@ -21,6 +21,12 @@ def register_routes(app: Flask) -> None:
                     "default_rotation_speed", data.DEFAULT_CONFIG["default_rotation_speed"]
                 ),
                 "i2c_device": request.form.get("i2c_device", data.DEFAULT_CONFIG["i2c_device"]),
+                "first_unit_address": request.form.get(
+                    "first_unit_address", data.DEFAULT_CONFIG["first_unit_address"]
+                ),
+                "tca_enabled": "tca_enabled" in request.form,
+                "tca_address": request.form.get("tca_address", data.DEFAULT_CONFIG["tca_address"]),
+                "tca_channels": request.form.get("tca_channels", data.DEFAULT_CONFIG["tca_channels"]),
                 "log_line_limit": request.form.get("log_line_limit", data.DEFAULT_CONFIG["log_line_limit"]),
                 "default_prop_clock_time": request.form.get(
                     "default_prop_clock_time", data.DEFAULT_CONFIG["default_prop_clock_time"]
