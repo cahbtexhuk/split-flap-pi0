@@ -37,12 +37,12 @@ def initialize_app(simulate_i2c: bool = False) -> None:
         data.console_print("[SIMULATE] i2c simulation mode active - no hardware will be accessed")
     else:
         data.console_print("i2c hardware mode active")
+    hardware.initialize_i2c_scan(data.get_config(), data.console_print)
 
 
 def main() -> None:
     args = parse_args()
     initialize_app(simulate_i2c=bool(args.disable_i2c))
-    hardware.initialize_i2c_scan(data.get_config(), data.console_print)
     app.run(host="0.0.0.0", port=5000, debug=False)
 
 
