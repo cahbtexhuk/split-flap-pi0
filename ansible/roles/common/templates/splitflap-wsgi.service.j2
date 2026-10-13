@@ -5,7 +5,7 @@ After=network.target
 [Service]
 Type=simple
 WorkingDirectory={{ wsgi_app_dir }}
-ExecStart=/usr/bin/gunicorn3 --workers {{ wsgi_workers }} --bind {{ wsgi_bind }} --access-logfile - --error-logfile - --capture-output --log-level info wsgi:app
+ExecStart=/usr/bin/gunicorn3 --workers {{ wsgi_workers }} --bind {{ wsgi_bind }} --timeout 60 --access-logfile - --error-logfile - --capture-output --log-level info wsgi:app
 Restart=on-failure
 User=split-flap
 Group=split-flap
