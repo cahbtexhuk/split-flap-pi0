@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel">
+  <h2>Console Log</h2>
+  <p>Latest events from application startup onward.</p>
+  <div class="terminal-window">
+    {% if log_lines %}
+      {% for line in log_lines %}
+{{ line }}
+      {% endfor %}
+    {% else %}
+[no logs yet]
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

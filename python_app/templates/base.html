@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Split-Flap Controller</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="site-header">
+    <h1>Split-Flap Controller</h1>
+    <nav>
+      <a href="{{ url_for('message_page') }}">Message</a>
+      <a href="{{ url_for('config_page') }}">Configuration</a>
+      <a href="{{ url_for('prop_clock_page') }}">Prop Clock</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="flash-wrap">
+          {% for msg in messages %}
+            <div class="flash-msg">{{ msg }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+
+    <section class="panel log-footer">
+      <h3>Console Log</h3>
+      <pre class="terminal-window" id="log-output">[loading...]</pre>
+    </section>
+  </main>
+
+<script>
+  (function () {
+    const el = document.getElementById("log-output");
+    let lastCount = 0;
+
+    async function pollLogs() {
+      try {
+        const resp = await fetch("/api/logs");
+        if (!resp.ok) return;
+        const data = await resp.json();
+        const lines = data.lines || [];
+        if (lines.length !== lastCount) {
+          lastCount = lines.length;
+          el.textContent = lines.length ? lines.join("\n") : "[no logs yet]";
+          el.scrollTop = el.scrollHeight;
+        }
+      } catch (_) {}
+    }
+
+    pollLogs();
+    setInterval(pollLogs, 3000);
+  })();
+</script>
+</body>
+</html>

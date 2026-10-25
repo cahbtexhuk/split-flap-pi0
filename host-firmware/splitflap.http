@@ -1,0 +1,73 @@
+@baseUrl = http://splitflap.local
+@updateUser = admin
+@updatePassword = changeme
+
+### Send message
+POST {{baseUrl}}/api/message
+Content-Type: application/json
+
+{
+  "message": "1234567890"
+}
+
+### Send message - speed as string
+POST {{baseUrl}}/api/message
+Content-Type: application/json
+
+{
+  "message": "0987654321",
+  "speed": "8"
+}
+
+### Send message - speed as number
+POST {{baseUrl}}/api/message
+Content-Type: application/json
+
+{
+  "message": "1234567890",
+  "speed": 8
+}
+
+### Send message - invalid speed falls back to default
+POST {{baseUrl}}/api/message
+Content-Type: application/json
+
+{
+  "message": "HELLO",
+  "speed": "9999"
+}
+
+### Send message - too long (trimmed)
+POST {{baseUrl}}/api/message
+Content-Type: application/json
+
+{
+  "message": "THIS MESSAGE IS LONGER THAN THE DISPLAY"
+}
+
+### Send message - missing message (expects 400)
+POST {{baseUrl}}/api/message
+Content-Type: application/json
+
+{
+  "speed": 8
+}
+
+### Clear display
+POST {{baseUrl}}/api/clear
+
+### Console log
+GET {{baseUrl}}/api/log
+
+### Scan for slaves
+POST {{baseUrl}}/scan
+
+### Save settings
+POST {{baseUrl}}/settings
+Content-Type: application/x-www-form-urlencoded
+
+num_symbols=10&default_speed=8&first_unit_address=1&hostname=splitflap&tca_enabled=on&tca_address=0x70&tca_channels=0,1
+
+### Firmware update page
+GET {{baseUrl}}/update
+Authorization: Basic {{updateUser}}:{{updatePassword}}

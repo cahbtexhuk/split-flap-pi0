@@ -13,6 +13,7 @@
     owner: root
     group: root
     mode: "0644"
+    force: false
     content: |
       def app(environ, start_response):
           body = b"Hello World from /opt/app"
@@ -29,6 +30,7 @@
     owner: root
     group: root
     mode: "0644"
+  notify: Restart WSGI service
 
 - name: Enable and start WSGI service
   ansible.builtin.systemd:

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel">
+  <h2>Message</h2>
+  <form method="post" class="form-grid">
+    <label>
+      Message text
+      <input type="text" name="message" maxlength="200" placeholder="Type your message">
+    </label>
+
+    <fieldset>
+      <legend>Alignment</legend>
+      <label><input type="radio" name="alignment" value="left" {% if alignment == 'left' %}checked{% endif %}> Left</label>
+      <label><input type="radio" name="alignment" value="center" {% if alignment == 'center' %}checked{% endif %}> Center</label>
+      <label><input type="radio" name="alignment" value="right" {% if alignment == 'right' %}checked{% endif %}> Right</label>
+    </fieldset>
+
+    <label>
+      Optional speed override
+      <input type="number" name="speed" min="1" placeholder="Use config default if empty">
+    </label>
+
+    <div class="actions">
+      <button type="submit" name="action" value="send">Send Message</button>
+      <button type="submit" name="action" value="clean" class="secondary">Clean Display (10 spaces)</button>
+    </div>
+  </form>
+
+  <div class="preview-wrap">
+    <h3>Last formatted output</h3>
+    <pre class="display-preview">{{ preview }}</pre>
+    <p>Display width: {{ config.num_symbols }} symbols</p>
+  </div>
+</section>
+{% endblock %}

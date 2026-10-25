@@ -4,14 +4,20 @@
 # filesystems). Configuration is passed via environment variables instead.
 #
 # Usage:
-#   ./run.sh                                    # use inventory host
-#   ./run.sh deploy_app.yml                     # run a specific playbook in playbooks/
-#   ./run.sh -e ansible_host=192.168.1.106      # override target IP
-#   ./run.sh -i 192.168.1.106,                  # one-off IP, no inventory
+#   ./run.sh                                    # deploy app (deploy_app.yml) using inventory host
+#   ./run.sh -e ansible_host=192.168.1.106      # deploy app, override target IP
+#   ./run.sh provision.yml                      # full Pi provisioning (first-time setup)
+#   ./run.sh provision.yml -e ansible_host=IP   # full provisioning with IP override
+#   ./run.sh -i 192.168.1.106,                  # deploy app, one-off IP (no inventory)
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+if ! ssh-add -l >/dev/null 2>&1; then
+	eval "$(ssh-agent -s)" >/dev/null
+	ssh-add
+fi
 
 export ANSIBLE_ROLES_PATH="${SCRIPT_DIR}/roles"
 export ANSIBLE_INVENTORY="${SCRIPT_DIR}/inventories/dev/hosts.yml"
@@ -20,7 +26,7 @@ export ANSIBLE_RETRY_FILES_ENABLED=False
 export ANSIBLE_STDOUT_CALLBACK=default
 export ANSIBLE_RESULT_FORMAT=yaml
 
-PLAYBOOK="${SCRIPT_DIR}/playbooks/site.yml"
+PLAYBOOK="${SCRIPT_DIR}/playbooks/deploy_app.yml"
 
 if [[ $# -gt 0 && "$1" == *.yml ]]; then
 	PLAYBOOK="${SCRIPT_DIR}/playbooks/$1"

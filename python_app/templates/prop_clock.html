@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel">
+  <h2>Prop Clock</h2>
+  <div class="clock-state">
+    <p>Start time: <strong id="start-time">{{ clock.start_time }}</strong></p>
+    <p>Current time: <strong id="current-time">{{ clock.current_time }}</strong></p>
+  </div>
+
+  <form id="set-start-form" class="inline-form">
+    <label>
+      Override start time
+      <input id="start-input" type="time" required value="{{ clock.start_time }}">
+    </label>
+    <button type="submit">Set Start Time</button>
+  </form>
+
+  <div class="clock-buttons">
+    <button data-action="reset">Reset to Start</button>
+    <button data-minutes="5">+ 5 min</button>
+    <button data-minutes="10">+ 10 min</button>
+    <button data-minutes="30">+ 30 min</button>
+    <button data-hours="1">+ 1 hour</button>
+    <button data-hours="2">+ 2 hours</button>
+  </div>
+
+  <p id="clock-status" class="status"></p>
+</section>
+
+<script>
+  async function postJson(url, payload) {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload || {})
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || "Request failed");
+    }
+    return data;
+  }
+
+  function updateClock(data) {
+    document.getElementById("start-time").textContent = data.start_time;
+    document.getElementById("current-time").textContent = data.current_time;
+    document.getElementById("start-input").value = data.start_time;
+  }
+
+  function setStatus(message, error) {
+    const el = document.getElementById("clock-status");
+    el.textContent = message;
+    el.className = error ? "status error" : "status";
+  }
+
+  document.getElementById("set-start-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const time = document.getElementById("start-input").value;
+    try {
+      const data = await postJson("/api/clock/set-start", { time });
+      updateClock(data);
+      setStatus("Start time updated.");
+    } catch (err) {
+      setStatus(err.message, true);
+    }
+  });
+
+  document.querySelectorAll(".clock-buttons button").forEach((button) => {
+    button.addEventListener("click", async () => {
+      try {
+        let data;
+        if (button.dataset.action === "reset") {
+          data = await postJson("/api/clock/reset", {});
+        } else if (button.dataset.minutes) {
+          data = await postJson("/api/clock/add-minutes", { minutes: Number(button.dataset.minutes) });
+        } else if (button.dataset.hours) {
+          data = await postJson("/api/clock/add-hours", { hours: Number(button.dataset.hours) });
+        }
+
+        if (data) {
+          updateClock(data);
+          setStatus("Clock updated.");
+        }
+      } catch (err) {
+        setStatus(err.message, true);
+      }
+    });
+  });
+</script>
+{% endblock %}
