@@ -16,13 +16,29 @@ struct Settings {
   uint8_t numSymbols;
   uint8_t defaultSpeed;
   uint8_t firstUnitAddress;  // switch value of the first unit, not the raw I2C address
+  char hostname[32];
+  bool tcaEnabled;
+  uint8_t tcaAddress;
+  uint8_t tcaChannels;  // bit n set = TCA9548A channel n is used
+};
+
+// Raw values as submitted by the settings form.
+struct SettingsInput {
+  long numSymbols;
+  long defaultSpeed;
+  long firstUnitAddress;
+  String hostname;
+  bool tcaEnabled;
+  String tcaAddress;   // decimal or 0x-prefixed hex
+  String tcaChannels;  // e.g. "0, 1"
 };
 
 namespace settings {
 
 void load();
-void apply(long numSymbols, long defaultSpeed, long firstUnitAddress);
+void apply(const SettingsInput& input);
 const Settings& get();
 uint8_t unitAddress(uint8_t index);
+String channelsText();
 
 }  // namespace settings

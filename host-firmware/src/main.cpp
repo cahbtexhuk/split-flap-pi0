@@ -4,15 +4,18 @@
 
 #include "console.h"
 #include "display.h"
+#include "net.h"
 #include "settings.h"
+#include "version.h"
 #include "web.h"
 
 void setup() {
   console::begin();
   settings::load();
   display::begin();
-  console::print("boot");
+  console::print("boot %s", BUILD_TAG);
 
+  WiFi.setHostname(settings::get().hostname);
   WiFiManager wm;
   wm.setDebugOutput(ENABLE_SERIAL_LOG);
   wm.setConnectTimeout(20);
@@ -25,6 +28,7 @@ void setup() {
   }
   console::print("wifi connected, ip %s", WiFi.localIP().toString().c_str());
 
+  net::startMdns();
   display::scan();
   web::begin();
 }
